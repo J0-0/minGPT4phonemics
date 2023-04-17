@@ -94,7 +94,7 @@ if __name__ == '__main__':
     set_seed(config.system.seed)
 
     # construct the training dataset
-    text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes.txt', 'r').read() # don't worry we won't run out of file handles
+    text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     # print("DICTIONNARY ", train_dataset.itos)
 
