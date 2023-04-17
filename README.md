@@ -1,5 +1,11 @@
 
-# minGPT
+# minGPT for phonemics
+
+
+## Using the minGPT model to compute probabilities and confidence in next-phoneme prediction in deep networks and comparing it to neural activity of humans listening to speech and stories.
+
+Following is the original README.md from the minGPT model: https://github.com/karpathy/minGPT.
+
 
 ![mingpt](mingpt.jpg)
 
