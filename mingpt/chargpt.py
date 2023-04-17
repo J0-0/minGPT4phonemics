@@ -96,7 +96,7 @@ if __name__ == '__main__':
     # construct the training dataset
     text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes.txt', 'r').read() # don't worry we won't run out of file handles
     train_dataset = CharDataset(config.data, text)
-    print("DICTIONNARY ", train_dataset.itos)
+    # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()
