@@ -132,7 +132,20 @@ if __name__ == '__main__':
             # revert model to training mode
             model.train()
 
-    trainer.set_callback('on_batch_end', batch_end_callback)
 
-    # run the optimization
-    trainer.run()
+    train_bool = False
+    if train_bool:
+        trainer.set_callback('on_batch_end', batch_end_callback)
+
+        # run the optimization
+        trainer.run()
+
+    test_bool = True
+    if test_bool:
+        PATH = "/content/out/chargpt/model_loss0_5.pt"
+        model.load_state_dict(torch.load(PATH))
+        text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
+        print(text_test, len(text_test), text_test[:10])
+        print(text_test, len(text_test), text_test[:10])
+        print(text_test, len(text_test), text_test[:10])
+        results = model.generate(text_test, 500, temperature=1.0, do_sample=True, top_k=10)[0]
