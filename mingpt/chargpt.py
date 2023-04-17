@@ -94,7 +94,7 @@ if __name__ == '__main__':
     set_seed(config.system.seed)
 
     # construct the training dataset
-    text = open('/content/minGPT4phonemics/mingpt/wiki_test.txt', 'r').read() # don't worry we won't run out of file handles
+    text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes.txt', 'r').read() # don't worry we won't run out of file handles
     train_dataset = CharDataset(config.data, text)
     print("DICTIONNARY ", train_dataset.itos)
 
@@ -117,7 +117,7 @@ if __name__ == '__main__':
             model.eval()
             with torch.no_grad():
                 # sample from the model...
-                context = "O God, O God!"
+                context = "əʊ ɡɑd, əʊ ɡɑd!"
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None,...].to(trainer.device)
                 y = model.generate(x, 500, temperature=1.0, do_sample=True, top_k=10)[0]
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
