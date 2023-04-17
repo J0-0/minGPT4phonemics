@@ -9,14 +9,11 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
 
-from mingpt.model import GPT
-from mingpt.trainer import Trainer
-from mingpt.utils import set_seed, setup_logging, CfgNode as CN
+from model import GPT
+from trainer import Trainer
+from utils import set_seed, setup_logging, CfgNode as CN
 
 # -----------------------------------------------------------------------------
-#from metal import MTLCreateSystemDefaultDevice
-#device = MTLCreateSystemDefaultDevice()
-
 
 def get_config():
 
@@ -64,6 +61,7 @@ class CharDataset(Dataset):
         self.itos = { i:ch for i,ch in enumerate(chars) }
         self.vocab_size = vocab_size
         self.data = data
+        print("DICO", self.stoi)
 
     def get_vocab_size(self):
         return self.vocab_size
@@ -96,8 +94,9 @@ if __name__ == '__main__':
     set_seed(config.system.seed)
 
     # construct the training dataset
-    text = open('wiki_input.txt', 'r').read() # don't worry we won't run out of file handles
+    text = open('/content/minGPT/mingpt/input.txt', 'r').read() # don't worry we won't run out of file handles
     train_dataset = CharDataset(config.data, text)
+    print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()
@@ -106,12 +105,6 @@ if __name__ == '__main__':
 
     # construct the trainer object
     trainer = Trainer(config.trainer, model, train_dataset)
-    print("trainer_device =", trainer.device)
-    if trainer.device == "cpu":
-        trainer.device = "opengl"
-        print("trainer_device =", trainer.device)
-        # RuntimeError: Expected one of cpu, cuda, ipu, xpu, mkldnn, opengl, opencl, ideep, hip, ve, fpga, ort, xla,
-        # lazy, vulkan, mps, meta, hpu, mtia, privateuseone device type at start of device string: gpu
 
     # iteration callback
     def batch_end_callback(trainer):
@@ -128,7 +121,10 @@ if __name__ == '__main__':
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None,...].to(trainer.device)
                 y = model.generate(x, 500, temperature=1.0, do_sample=True, top_k=10)[0]
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
-                print(completion)
+                print("COMPLETION ", completion)
+            # chars_computes = sorted(list(set(data)))
+            # self.itos = { i:ch for i,ch in enumerate(chars) } 
+            # train_dataset.itos[int(idx_next)],
             # save the latest model
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")

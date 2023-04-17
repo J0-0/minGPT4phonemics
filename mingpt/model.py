@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from mingpt.utils import CfgNode as CN
+from utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
 
@@ -286,6 +286,8 @@ class GPT(nn.Module):
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         """
+        
+        dico = {0: '\n', 1: ' ', 2: '!', 3: '"', 4: '#', 5: '$', 6: '%', 7: '&', 8: "'", 9: '(', 10: ')', 11: '*', 12: '+', 13: ',', 14: '-', 15: '.', 16: '/', 17: '0', 18: '1', 19: '2', 20: '3', 21: '4', 22: '5', 23: '6', 24: '7', 25: '8', 26: '9', 27: ':', 28: ';', 29: '<', 30: '=', 31: '>', 32: '?', 33: '@', 34: 'A', 35: 'B', 36: 'C', 37: 'D', 38: 'E', 39: 'F', 40: 'G', 41: 'H', 42: 'I', 43: 'J', 44: 'K', 45: 'L', 46: 'M', 47: 'N', 48: 'O', 49: 'P', 50: 'Q', 51: 'R', 52: 'S', 53: 'T', 54: 'U', 55: 'V', 56: 'W', 57: 'X', 58: 'Y', 59: 'Z', 60: '[', 61: ']', 62: '^', 63: 'a', 64: 'b', 65: 'c', 66: 'd', 67: 'e', 68: 'f', 69: 'g', 70: 'h', 71: 'i', 72: 'j', 73: 'k', 74: 'l', 75: 'm', 76: 'n', 77: 'o', 78: 'p', 79: 'q', 80: 'r', 81: 's', 82: 't', 83: 'u', 84: 'v', 85: 'w', 86: 'x', 87: 'y', 88: 'z', 89: '£', 90: '¥', 91: '©', 92: '°', 93: '½', 94: 'Æ', 95: 'É', 96: '×', 97: 'ß', 98: 'à', 99: 'á', 100: 'ã', 101: 'ä', 102: 'å', 103: 'æ', 104: 'ç', 105: 'è', 106: 'é', 107: 'ê', 108: 'í', 109: 'ñ', 110: 'ó', 111: 'ô', 112: 'ö', 113: 'ú', 114: 'ü', 115: 'ć', 116: 'č', 117: 'ī', 118: 'ł', 119: 'Ō', 120: 'ō', 121: 'Š', 122: 'ū', 123: '̍', 124: '͘', 125: 'Π', 126: 'Ω', 127: 'α', 128: 'β', 129: 'ω', 130: 'א', 131: 'ב', 132: 'י', 133: 'ל', 134: 'ר', 135: 'ש', 136: 'ת', 137: 'ग', 138: '्', 139: 'ả', 140: 'ẩ', 141: '‑', 142: '–', 143: '—', 144: '’', 145: '“', 146: '”', 147: '†', 148: '‡', 149: '…', 150: '⁄', 151: '₩', 152: '₱', 153: '→', 154: '−', 155: '♯', 156: '王'}
         for _ in range(max_new_tokens):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
@@ -302,6 +304,10 @@ class GPT(nn.Module):
             # either sample from the distribution or take the most likely element
             if do_sample:
                 idx_next = torch.multinomial(probs, num_samples=1)
+                print("idx_next, probs", idx_next, dico[int(idx_next)], 
+                torch.max(probs), 
+                probs.size())
+                print()
             else:
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
             # append sampled index to the running sequence and continue
