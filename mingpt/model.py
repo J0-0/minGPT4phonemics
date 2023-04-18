@@ -304,10 +304,7 @@ class GPT(nn.Module):
             # either sample from the distribution or take the most likely element
             if do_sample:
                 idx_next = torch.multinomial(probs, num_samples=1)
-                print("idx_next, probs", idx_next, dico[int(idx_next)], 
-                torch.max(probs), 
-                probs.size())
-                print()
+                #print("idx_next, probs", idx_next, dico[int(idx_next)], torch.max(probs), probs.size())
             else:
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
             # append sampled index to the running sequence and continue
