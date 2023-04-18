@@ -94,7 +94,7 @@ if __name__ == '__main__':
     set_seed(config.system.seed)
 
     # construct the training dataset
-    text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes.txt', 'r').read()
+    text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
     train_dataset = CharDataset(config.data, text)
     # print("DICTIONNARY ", train_dataset.itos)
 
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     test_bool = True
     if test_bool:
         #PATH = "/content/out/chargpt/model_loss0_5.pt" 
-        PATH = "/content/out/chargpt/model_loss_0_55.pt" 
+        PATH = "/content/out/chargpt/model.pt" #model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
         text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
         dic_phonemes_pred_proba = {}
