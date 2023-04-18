@@ -102,8 +102,10 @@ if __name__ == '__main__':
     config.model.vocab_size = train_dataset.get_vocab_size() #51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
-    # config.model.vocab_size, config.model.block_size 72 128
+    # config.model.vocab_size, config.model.block_size 72 128 #75 128
     model = GPT(config.model)
+    PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
+    model.load_state_dict(torch.load(PATH))
     print("config.model ", config.model)
     #config.model  model_type: gpt-mini
 
@@ -147,7 +149,7 @@ if __name__ == '__main__':
     test_bool = True
     if test_bool:
         #PATH = "/content/out/chargpt/model_loss0_5.pt" 
-        PATH = "/content/out/chargpt/model.pt" #model_loss_0_55.pt
+        PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
         text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
         dic_phonemes_pred_proba = {}
@@ -161,9 +163,11 @@ if __name__ == '__main__':
         test_torch = torch.tensor([train_dataset.stoi[s] for s in text_test], dtype=torch.long)[None,...].to(trainer.device)
         print("test_torch ", test_torch.size())
         results = model.generate(test_torch, 500, temperature=1.0, do_sample=True, top_k=10)[0]
-        print("RESULTS ", results)
         text_results = open('/content/results.txt', "w")
-        text_results.write(results)
+        print("RESULTS ", results.tolist())
+        print("RESULTS TRANSLATED ", [train_dataset.itos[i] for i in results.tolist()])
+        text_results.write(results.tolist())
+        text_results.write([train_dataset.itos[i] for i in results.tolist()])
         test_results.close()
 
         ## REMOVE text_test[:5000]
