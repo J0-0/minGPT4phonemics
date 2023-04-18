@@ -137,7 +137,7 @@ if __name__ == '__main__':
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool:
         trainer.set_callback('on_batch_end', batch_end_callback)
 
