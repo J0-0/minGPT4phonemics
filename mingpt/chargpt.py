@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # construct the training dataset
     #text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
-    text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_train_to_phonemes_punct.txt', 'r').read()
+    text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     # print("DICTIONNARY ", train_dataset.itos)
 
@@ -155,29 +155,17 @@ if __name__ == '__main__':
         PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
         #text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
-        text_test = open('/content/minGPT4phonemics/mingpt/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
-        test_text_stoi = {ch:i for i,ch in enumerate(text_test)}
-        test_text_itos = {i:ch for i,ch in enumerate(text_test)}
-        print("test_text_stoi", test_text_stoi)
+        text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
         print("train_dataset.stoi", train_dataset.stoi)
-        print("test_text_itos", test_text_itos)
         print("train_dataset.itos", train_dataset.itos)
         dic_phonemes_pred_proba = {}
-        #for i in len(text_test):
-        #print(text_test, len(text_test), text_test[:10])
         print("LEN TEXT TEST", len(text_test)) #1285865
-        # print(len(sorted(list(set(text_test[:5000]))))) #54 #45 if text_test[:5000]
-        print(len(sorted(list(set(text_test))))) #54 #45 if text_test[:5000]
-        #print([train_dataset.stoi[s] for s in text_test[:5000]], len([train_dataset.stoi[s] for s in text_test[:5000]])) 
-        print([test_text_stoi[s] for s in text_test], len([test_text_stoi[s] for s in text_test]))
-        test_torch = torch.tensor([test_text_stoi[s] for s in text_test], dtype=torch.long)[None,...].to(trainer.device)
+        print(len(sorted(list(set(text_test)))))
+        test_torch = torch.tensor([train_dataset.stoi[s] for s in text_test], dtype=torch.long)[None,...].to(trainer.device)
         print("test_torch ", test_torch.size())
         results = model.generate(test_torch, 500, temperature=1.0, do_sample=True, top_k=10)[0]
         text_results = open('/content/results.txt', "w")
-        print("RESULTS ", results.tolist())
-        list_results = [test_text_itos[i] for i in results.tolist()]
+        list_results = [train_dataset.itos[i] for i in results.tolist()]
         print("RESULTS TRANSLATED ", list_results)
-        text_results.write(results.tolist())
-        text_results.write(list_results)
+        text_results.write("".join(list_results))
         text_results.close()
-        ## REMOVE text_test[:5000]
