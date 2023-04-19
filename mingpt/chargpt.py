@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     # construct the training dataset
     #text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
-    text = open('/content/minGPT4phonemics/mingpt/wiki_valid_to_phonemes.txt', 'r').read()
+    text = open('/content/minGPT4phonemics/mingpt/wiki_train_to_phonemes_punct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     # print("DICTIONNARY ", train_dataset.itos)
 
@@ -152,7 +152,8 @@ if __name__ == '__main__':
         #PATH = "/content/out/chargpt/model_loss0_5.pt" 
         PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
-        text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
+        #text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
+        text_test = open('/content/minGPT4phonemics/mingpt/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
         dic_phonemes_pred_proba = {}
         #for i in len(text_test):
         #print(text_test, len(text_test), text_test[:10])
