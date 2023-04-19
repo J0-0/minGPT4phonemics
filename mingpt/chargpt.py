@@ -4,6 +4,8 @@ Trains a character-level language model.
 
 import os
 import sys
+import csv
+
 
 import torch
 from torch.utils.data import Dataset
@@ -100,7 +102,7 @@ if __name__ == '__main__':
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
-    config.model.vocab_size = train_dataset.get_vocab_size() #51
+    config.model.vocab_size = 75 #train_dataset.get_vocab_size() #51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
@@ -142,7 +144,7 @@ if __name__ == '__main__':
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool:
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -151,21 +153,31 @@ if __name__ == '__main__':
 
     test_bool = True
     if test_bool:
-        #PATH = "/content/out/chargpt/model_loss0_5.pt" 
+        size_context = 20
+        text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
+        path_save_results = "/content/minGPT4phonemics/results_context_20"
         PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
-        #text_test = open('/content/minGPT4phonemics/mingpt/wiki_test_to_phonemes.txt', 'r').read()
-        text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
         print("train_dataset.stoi", train_dataset.stoi)
-        print("train_dataset.itos", train_dataset.itos)
         dic_phonemes_pred_proba = {}
-        print("LEN TEXT TEST", len(text_test)) #1285865
-        print(len(sorted(list(set(text_test)))))
-        test_torch = torch.tensor([train_dataset.stoi[s] for s in text_test], dtype=torch.long)[None,...].to(trainer.device)
-        print("test_torch ", test_torch.size())
-        results = model.generate(test_torch, 500, temperature=1.0, do_sample=True, top_k=10)[0]
-        text_results = open('/content/results.txt', "w")
-        list_results = [train_dataset.itos[i] for i in results.tolist()]
-        print("RESULTS TRANSLATED ", list_results)
-        text_results.write("".join(list_results))
+        print(len(sorted(list(set(text_test)))), "different characters")
+        n_char2predict = len(text_test)-20
+        print(n_char2predict, " iterations")
+        text_results = open(path_save_results+'.txt', "w")
+        with open(path_save_results+'.csv', 'w') as f:
+          f.write("%s,%s,%s,%s\n"%("ORDER", "predicted CHARACTER", 
+          "target CHARACTER", "PROBABILITY"))
+          for pred_char in range(n_char2predict):
+            context = text_test[pred_char:size_context+pred_char]
+            test_torch = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None,...].to(trainer.device)
+            results = model.generate(test_torch, 1, temperature=1.0, do_sample=True, top_k=10, return_proba = True)
+            result_char, results_probas = results[0][0].tolist()[-1], results[1]
+            char_results = train_dataset.itos[result_char] if result_char <len(train_dataset.itos) else "_" 
+            print(pred_char, char_results, 
+            text_test[size_context+pred_char])
+            text_results.write(char_results)
+            for enum, key in enumerate(results_probas.keys()):
+              f.write("%s,%s,%s,%s\n"%(pred_char,key[1], 
+              train_dataset.stoi[text_test[size_context+enum]], results_probas[key]))
         text_results.close()
+        
