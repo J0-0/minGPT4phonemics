@@ -97,12 +97,13 @@ if __name__ == '__main__':
 
     # construct the training dataset
     #text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
-    text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
+    #text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
+    text = open('/content/drive/MyDrive/stimuli_minGPT/intermediate_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
-    config.model.vocab_size = 75 #train_dataset.get_vocab_size() #51
+    config.model.vocab_size = train_dataset.get_vocab_size() #51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
@@ -140,11 +141,13 @@ if __name__ == '__main__':
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")
             torch.save(model.state_dict(), ckpt_path)
+            path_drive_interm = "/content/drive/MyDrive/out/chargpt/model_interm.pt"
+            torch.save(model.state_dict(), path_drive_interm)
             # revert model to training mode
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool:
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -156,8 +159,9 @@ if __name__ == '__main__':
         size_context = 20
         text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
         path_save_results = "/content/minGPT4phonemics/results_context_20"
-        PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
-        model.load_state_dict(torch.load(PATH))
+        # PATH = "/content/drive/MyDrive/out/chargpt/model.pt" #model_loss_0_55.pt
+        #ckpt_path = os.path.join(config.system.work_dir, "model.pt")
+        #model.load_state_dict(torch.load(ckpt_path))
         print("train_dataset.stoi", train_dataset.stoi)
         dic_phonemes_pred_proba = {}
         print(len(sorted(list(set(text_test)))), "different characters")
