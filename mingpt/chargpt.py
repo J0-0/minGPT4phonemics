@@ -152,7 +152,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -162,7 +162,7 @@ if __name__ == '__main__' :
     test_bool = True
     if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
-        path_save_results = "/content/drive/MyDrive/minGPT_results/results_context"
+        path_save_results = "/content/drive/MyDrive/minGPT_results/results_total_context"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
