@@ -100,9 +100,9 @@ if __name__ == '__main__' :
     # construct the training dataset
     # text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
-    text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
+    text = open('/content/drive/MyDrive/stimuli_minGPT/pretrained_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_total = "/content/drive/MyDrive/out/chargpt/model_total.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
@@ -148,7 +148,7 @@ if __name__ == '__main__' :
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")
             torch.save(model.state_dict(), ckpt_path)
-            torch.save(model.state_dict(), path_drive_total)
+            torch.save(model.state_dict(), path_drive_pretrained)
             # revert model to training mode
             model.train()
 
@@ -163,11 +163,11 @@ if __name__ == '__main__' :
     test_bool = True
     if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
-        path_save_results = "/content/drive/MyDrive/minGPT_results/results_total_context"
+        path_save_results = "/content/drive/MyDrive/minGPT_results/results_pretrained_context"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
-        model.load_state_dict(torch.load(path_drive_total))
+        model.load_state_dict(torch.load(path_drive_pretrained))
         with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
             acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
                                                   "sum_approx_correct_pred"))
