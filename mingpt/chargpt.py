@@ -14,7 +14,9 @@ from torch.utils.data.dataloader import DataLoader
 from model import GPT
 from trainer import Trainer
 from utils import set_seed, setup_logging, CfgNode as CN
-
+import torch
+torch.cuda.empty_cache()
+#print(torch.cuda.memory_summary(device=None, abbreviated=False))
 
 # -----------------------------------------------------------------------------
 
@@ -31,7 +33,8 @@ def get_config() :
 
     # model
     C.model = GPT.get_default_config()
-    C.model.model_type = 'gpt-mini'
+    #C.model.model_type = 'gpt-mini'
+    C.model.model_type = 'gpt2'
 
     # trainer
     C.trainer = Trainer.get_default_config()
@@ -100,13 +103,13 @@ if __name__ == '__main__' :
     # construct the training dataset
     # text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
-    text = open('/content/drive/MyDrive/stimuli_minGPT/pretrained_train_wiki103_ph_ponct.txt', 'r').read()
+    text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
-    model = GPT.from_pretrained(config.model)
+    model = GPT.from_pretrained('gpt2')
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
@@ -153,7 +156,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
 
