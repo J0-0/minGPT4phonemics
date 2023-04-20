@@ -141,7 +141,7 @@ if __name__ == '__main__' :
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
                 print(completion)
             # chars_computes = sorted(list(set(data)))
-            # self.itos = { i:ch for i,ch in enumerate(chars) } 
+            # self.itos = { i:ch for i,ch in enumerate(chars) }
             # train_dataset.itos[int(idx_next)],
             # save the latest model
             print("saving model")
@@ -155,27 +155,32 @@ if __name__ == '__main__' :
     train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
+
         # run the optimization
         trainer.run()
 
     test_bool = True
-    if test_bool:
+    if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
         path_save_results = "/content/drive/MyDrive/minGPT_results/results_context"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
-        text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt', 'r').read()
-        model.load_state_dict(torch.load(path_drive_interm))
-        print(len(sorted(list(set(text_test)))), "different characters")
         with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
-            acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred", "sum_approx_correct_pred"))
-            for size_context in [20, 30, 40, 50, 100, 500, 1000]:
-                path_save_results_context = path_save_results + "_" + str(size_context)
-                n_char2predict = len(text_test) - size_context
-                print(n_char2predict, " iterations")
+            acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
+                                                  "sum_approx_correct_pred"))
+            for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000] :
                 sum_correct_pred = 0
                 sum_approx_correct_pred = 0
+                text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt',
+                                 'r').read()
+                path_save_results_context = path_save_results + "_" + str(size_context)
+                model.load_state_dict(torch.load(path_drive_interm))
+                # print("train_dataset.stoi", train_dataset.stoi)
+                dic_phonemes_pred_proba = {}
+                print(len(sorted(list(set(text_test)))), "different characters")
+                n_char2predict = len(text_test) - size_context
+                print(n_char2predict, " iterations")
                 if os.path.exists(path_save_results_context + '.txt') :
                     os.remove(path_save_results_context + '.txt')
                 if os.path.exists(path_save_results_context + '.csv') :
@@ -212,10 +217,11 @@ if __name__ == '__main__' :
                 print(size_context)
                 print("sum_correct_pred =", sum_correct_pred)
                 print("sum_approx_correct_pred =", sum_approx_correct_pred)
-                text_results_acc_for_context.write(
-                    str(size_context) + "   " + str(sum_correct_pred) + "   " + str(sum_approx_correct_pred) + "\n")
+                text_results_acc_for_context.write(str(size_context) + "   "
+                                                   + str(sum_correct_pred) + "   " + str(
+                    sum_approx_correct_pred) + "\n")
                 acc_for_context.write("%s,%s,%s\n" % (size_context, sum_correct_pred,
                                                       sum_approx_correct_pred))
                 text_results.close()
-                text_results_acc_for_context.flush()
+                # text_results_acc_for_context.flush()
         text_results_acc_for_context.close()
