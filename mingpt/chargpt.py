@@ -34,7 +34,7 @@ def get_config() :
     # model
     C.model = GPT.get_default_config()
     #C.model.model_type = 'gpt-mini'
-    C.model.model_type = 'gpt2'
+    C.model.model_type = 'gpt2-medium'
 
     # trainer
     C.trainer = Trainer.get_default_config()
@@ -105,7 +105,7 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
