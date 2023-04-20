@@ -100,9 +100,9 @@ if __name__ == '__main__' :
     # construct the training dataset
     # text = open('/content/drive/MyDrive/wiki_train_to_phonemes.txt', 'r').read() #/content/minGPT4phonemics/mingpt/
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
-    text = open('/content/drive/MyDrive/stimuli_minGPT/intermediate_train_wiki103_ph_ponct.txt', 'r').read()
+    text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_interm = "/content/drive/MyDrive/out/chargpt/model_interm.pt"
+    path_drive_total = "/content/drive/MyDrive/out/chargpt/model_total.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
@@ -147,12 +147,12 @@ if __name__ == '__main__' :
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")
             torch.save(model.state_dict(), ckpt_path)
-            torch.save(model.state_dict(), path_drive_interm)
+            torch.save(model.state_dict(), path_drive_total)
             # revert model to training mode
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -175,7 +175,7 @@ if __name__ == '__main__' :
                 text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt',
                                  'r').read()
                 path_save_results_context = path_save_results + "_" + str(size_context)
-                model.load_state_dict(torch.load(path_drive_interm))
+                model.load_state_dict(torch.load(path_drive_total))
                 # print("train_dataset.stoi", train_dataset.stoi)
                 dic_phonemes_pred_proba = {}
                 print(len(sorted(list(set(text_test)))), "different characters")
