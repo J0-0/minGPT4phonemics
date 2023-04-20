@@ -106,11 +106,12 @@ if __name__ == '__main__' :
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
+    model = GPT.from_pretrained(config.model)
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
-    model = GPT(config.model)
+    #model = GPT(config.model)
     want_pretrained_model = False
     if want_pretrained_model :
         PATH = "/content/drive/MyDrive/out/chargpt/model.pt"  # model_loss_0_55.pt
@@ -166,6 +167,7 @@ if __name__ == '__main__' :
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
+        model.load_state_dict(torch.load(path_drive_total))
         with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
             acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
                                                   "sum_approx_correct_pred"))
@@ -175,7 +177,6 @@ if __name__ == '__main__' :
                 text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt',
                                  'r').read()
                 path_save_results_context = path_save_results + "_" + str(size_context)
-                model.load_state_dict(torch.load(path_drive_total))
                 # print("train_dataset.stoi", train_dataset.stoi)
                 dic_phonemes_pred_proba = {}
                 print(len(sorted(list(set(text_test)))), "different characters")
