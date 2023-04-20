@@ -155,7 +155,6 @@ if __name__ == '__main__' :
     train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
-
         # run the optimization
         trainer.run()
 
