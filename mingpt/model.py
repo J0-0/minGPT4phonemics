@@ -298,7 +298,7 @@ class GPT(nn.Module):
         return logits, loss
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None):
+    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, add_layer = False):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -308,7 +308,7 @@ class GPT(nn.Module):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond, add_layer = True)
+            logits, _ = self(idx_cond, add_layer)
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
             # optionally crop the logits to only the top k options
@@ -328,7 +328,8 @@ class GPT(nn.Module):
         return idx
 
     @torch.no_grad()
-    def generate4testing(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, return_proba = False):
+    def generate4testing(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, return_proba = False,
+                         add_layer = False):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -339,7 +340,7 @@ class GPT(nn.Module):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond) # logit size = torch.Size([1, 128, 75])
+            logits, _ = self(idx_cond, add_layer) # logit size = torch.Size([1, 128, 75])
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature 
             # now at final step logits are of size = torch.Size([1, 75]), 

@@ -144,7 +144,7 @@ if __name__ == '__main__' :
                 context = "əʊ ɡɑd əʊ ɡɑd"
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
                     trainer.device)
-                y = model.generate(x, 500, temperature=1.0, do_sample=True, top_k=10)[0]
+                y = model.generate(x, 500, temperature=1.0, do_sample=True, top_k=10, add_layer = add_layer)[0]
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
                 print(completion)
                 print("config.model ", config.model)
@@ -202,7 +202,7 @@ if __name__ == '__main__' :
                         test_torch = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[
                             None, ...].to(trainer.device)
                         results = model.generate4testing(test_torch, 1, temperature=1.0, do_sample=True, top_k=10,
-                                                 return_proba=True)
+                                                 return_proba=True, add_layer = add_layer)
                         result_char, results_probas = results[0][0].tolist()[-1], list(results[1].values())[0]
                         char_result = train_dataset.itos[result_char] if result_char < len(train_dataset.itos) else "_"
                         text_results.write(char_result)
