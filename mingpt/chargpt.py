@@ -159,7 +159,6 @@ if __name__ == '__main__' :
     train_bool = True
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
-
         # run the optimization
         trainer.run()
 
@@ -175,7 +174,7 @@ if __name__ == '__main__' :
         with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
             acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
                                                   "sum_approx_correct_pred"))
-            for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000] :
+            for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
                 sum_correct_pred = 0
                 sum_approx_correct_pred = 0
                 text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt',
