@@ -34,7 +34,7 @@ def get_config() :
     # model
     C.model = GPT.get_default_config()
     #C.model.model_type = 'gpt-mini'
-    C.model.model_type = 'gpt2'
+    C.model.model_type = 'gpt2-medium'
 
     # trainer
     C.trainer = Trainer.get_default_config()
@@ -105,11 +105,11 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
-    model = GPT.from_pretrained('gpt2')
+    model = GPT.from_pretrained('gpt2-medium')
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     config.model.block_size = train_dataset.get_block_size()
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
@@ -156,7 +156,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -166,7 +166,8 @@ if __name__ == '__main__' :
     test_bool = True
     if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
-        path_save_results = "/content/drive/MyDrive/minGPT_results/GPT_2/gpt2_willow"
+        # ADD for loop for all 4 files
+        path_save_results = "/content/drive/MyDrive/minGPT_results/GPT_2_medium/gpt2_willow"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
