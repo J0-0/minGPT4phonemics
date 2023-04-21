@@ -140,7 +140,6 @@ if __name__ == '__main__' :
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
                     trainer.device)
                 y = model.generate4testing(x, 500, temperature=1.0, do_sample=True, top_k=10)[0]
-                print("y =", y)
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
                 print(completion)
                 print("config.model ", config.model)
