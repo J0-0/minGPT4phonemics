@@ -116,7 +116,7 @@ class GPT(nn.Module):
         C.attn_pdrop = 0.1
         return C
 
-    def __init__(self, config, add_layer = False, nb_voc_ph_punct = 94):
+    def __init__(self, config, add_layer = add_layer, nb_voc_ph_punct = 94):
         super().__init__()
         assert config.vocab_size is not None
         assert config.block_size is not None
@@ -179,7 +179,7 @@ class GPT(nn.Module):
             torch.nn.init.ones_(module.weight)
 
     @classmethod
-    def from_pretrained(cls, model_type, add_layer = False):
+    def from_pretrained(cls, model_type, add_layer = add_layer):
         """
         Initialize a pretrained GPT model by copying over the weights
         from a huggingface/transformers checkpoint.
@@ -271,7 +271,7 @@ class GPT(nn.Module):
         optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas) # layers already torch.no_grad
         return optimizer
 
-    def forward(self, idx, targets=None, add_layer = False):
+    def forward(self, idx, targets=None, add_layer = add_layer):
         device = idx.device
         b, t = idx.size()
         assert t <= self.block_size, f"Cannot forward sequence of length {t}, block size is only {self.block_size}"
@@ -290,16 +290,14 @@ class GPT(nn.Module):
         else:
           logits = self.lm_head(x)
 
-
         # if we are given some desired targets also calculate the loss
         loss = None
         if targets is not None:
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
-
         return logits, loss
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, add_layer = False):
+    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, add_layer = add_layer):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -309,7 +307,7 @@ class GPT(nn.Module):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond, add_layer)
+            logits, _ = self(idx_cond)
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
             # optionally crop the logits to only the top k options
@@ -330,7 +328,7 @@ class GPT(nn.Module):
 
     @torch.no_grad()
     def generate4testing(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, return_proba = False,
-                         add_layer = False):
+                         add_layer = add_layer):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -341,7 +339,7 @@ class GPT(nn.Module):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond, add_layer) # logit size = torch.Size([1, 128, 75])
+            logits, _ = self(idx_cond) # logit size = torch.Size([1, 128, 75])
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature 
             # now at final step logits are of size = torch.Size([1, 75]), 
