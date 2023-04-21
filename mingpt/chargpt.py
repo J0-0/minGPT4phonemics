@@ -106,7 +106,6 @@ if __name__ == '__main__' :
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
-    # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
     model = GPT.from_pretrained('gpt2-medium')
@@ -142,8 +141,10 @@ if __name__ == '__main__' :
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
                     trainer.device)
                 y = model.generate(x, 500, temperature=1.0, do_sample=True, top_k=10)[0]
+                print("y =", y)
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
                 print(completion)
+                print("config.model ", config.model)
             # chars_computes = sorted(list(set(data)))
             # self.itos = { i:ch for i,ch in enumerate(chars) }
             # train_dataset.itos[int(idx_next)],
