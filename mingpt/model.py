@@ -19,10 +19,6 @@ from utils import CfgNode as CN
 # -----------------------------------------------------------------------------
 
 # VARIABLES TO PASS THROUGH CHARGPT
-add_layer = False
-nb_voc_ph_punct = 94
-train_only_last_layer = False
-
 # -----------------------------------------------------------------------------
 
 
@@ -120,7 +116,7 @@ class GPT(nn.Module):
         C.attn_pdrop = 0.1
         return C
 
-    def __init__(self, config):
+    def __init__(self, config, add_layer = False, nb_voc_ph_punct = 94):
         super().__init__()
         assert config.vocab_size is not None
         assert config.block_size is not None
@@ -183,7 +179,7 @@ class GPT(nn.Module):
             torch.nn.init.ones_(module.weight)
 
     @classmethod
-    def from_pretrained(cls, model_type, voc_size = 94):
+    def from_pretrained(cls, model_type, add_layer = False):
         """
         Initialize a pretrained GPT model by copying over the weights
         from a huggingface/transformers checkpoint.
@@ -269,13 +265,12 @@ class GPT(nn.Module):
             {"params": [param_dict[pn] for pn in sorted(list(decay))], "weight_decay": train_config.weight_decay},
             {"params": [param_dict[pn] for pn in sorted(list(no_decay))], "weight_decay": 0.0},
         ]
-        if train_only_last_layer:
-            optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, optim_groups), lr=train_config.learning_rate, betas=train_config.betas)
-        else:
-            optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas)
+        #if train_only_last_layer:
+            #optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, optim_groups), lr=train_config.learning_rate, betas=train_config.betas)
+        optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas) # layers already torch.no_grad
         return optimizer
 
-    def forward(self, idx, targets=None):
+    def forward(self, idx, targets=None, add_layer = False):
         device = idx.device
         b, t = idx.size()
         assert t <= self.block_size, f"Cannot forward sequence of length {t}, block size is only {self.block_size}"
@@ -313,7 +308,7 @@ class GPT(nn.Module):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond)
+            logits, _ = self(idx_cond, add_layer = True)
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
             # optionally crop the logits to only the top k options

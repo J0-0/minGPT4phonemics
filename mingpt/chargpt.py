@@ -111,7 +111,7 @@ if __name__ == '__main__' :
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     voc_size = config.model.vocab_size
     config.model.block_size = train_dataset.get_block_size()
-    model = GPT.from_pretrained('gpt2-medium', voc_size)
+    model = GPT.from_pretrained('gpt2-medium', voc_size, add_layer = add_layer)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
     #model = GPT(config.model)
