@@ -17,8 +17,8 @@ from torch.nn import functional as F
 from utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
-
 # VARIABLES TO PASS THROUGH CHARGPT
+add_layer = True
 # -----------------------------------------------------------------------------
 
 
