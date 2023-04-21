@@ -151,7 +151,6 @@ class GPT(nn.Module):
             ln_f = nn.LayerNorm(config.n_embd),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-
         self.linear_fine_tuning = nn.Linear(config.vocab_size, nb_voc_ph_punct)
 
         # init all weights, and apply a special scaled init to the residual projections, per GPT-2 paper
@@ -191,6 +190,7 @@ class GPT(nn.Module):
         config.block_size = 1024  # openai's model block_size
         model = GPT(config)
         sd = model.state_dict()
+        print("SD =", sd)
 
         # init a huggingface/transformers model
         model_hf = GPT2LMHeadModel.from_pretrained(model_type)
@@ -198,7 +198,6 @@ class GPT(nn.Module):
 
         # copy while ensuring all of the parameters are aligned and match in names and shapes
         keys = [k for k in sd_hf if not k.endswith('attn.masked_bias')] # ignore these
-        print(keys)
         transposed = ['attn.c_attn.weight', 'attn.c_proj.weight', 'mlp.c_fc.weight', 'mlp.c_proj.weight']
         # basically the openai checkpoints use a "Conv1D" module, but we only want to use a vanilla nn.Linear.
         # this means that we have to transpose these weights when we import them
