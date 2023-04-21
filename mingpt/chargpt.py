@@ -108,9 +108,10 @@ if __name__ == '__main__' :
     path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
 
     # construct the model
-    model = GPT.from_pretrained('gpt2-medium')
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
+    voc_size = config.model.vocab_size
     config.model.block_size = train_dataset.get_block_size()
+    model = GPT.from_pretrained('gpt2-medium', voc_size)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
     #model = GPT(config.model)

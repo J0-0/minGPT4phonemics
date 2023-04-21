@@ -18,6 +18,8 @@ from utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
 
+nb_voc_ph_punct = 94
+
 class NewGELU(nn.Module):
     """
     Implementation of the GELU activation function currently in Google BERT repo (identical to OpenAI GPT).
@@ -150,6 +152,8 @@ class GPT(nn.Module):
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
+        self.linear_fine_tuning = nn.Linear(config.vocab_size, nb_voc_ph_punct)
+
         # init all weights, and apply a special scaled init to the residual projections, per GPT-2 paper
         self.apply(self._init_weights)
         for pn, p in self.named_parameters():
@@ -172,7 +176,7 @@ class GPT(nn.Module):
             torch.nn.init.ones_(module.weight)
 
     @classmethod
-    def from_pretrained(cls, model_type):
+    def from_pretrained(cls, model_type, voc_size = 94):
         """
         Initialize a pretrained GPT model by copying over the weights
         from a huggingface/transformers checkpoint.
@@ -183,7 +187,7 @@ class GPT(nn.Module):
         # create a from-scratch initialized minGPT model
         config = cls.get_default_config()
         config.model_type = model_type
-        config.vocab_size = 50257 # openai's model vocabulary
+        config.vocab_size = 50257 # openai's model vocabulary # otherwise works but learns slowly with 94
         config.block_size = 1024  # openai's model block_size
         model = GPT(config)
         sd = model.state_dict()
@@ -270,6 +274,7 @@ class GPT(nn.Module):
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)
+        x = self.linear_fine_tuning(x)
         logits = self.lm_head(x)
 
         # if we are given some desired targets also calculate the loss
