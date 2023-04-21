@@ -21,7 +21,7 @@ class Trainer:
         C.num_workers = 4
         # optimizer parameters
         C.max_iters = 20000 #None #10
-        C.batch_size = 32
+        C.batch_size = 16 # if gpt-medium, otherwise 32 if gpt2, otherwise 64 if gpt-mini
         C.learning_rate = 3e-4
         C.betas = (0.9, 0.95)
         C.weight_decay = 0.1 # only applied on matmul weights
