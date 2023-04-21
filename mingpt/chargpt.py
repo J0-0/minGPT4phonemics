@@ -109,7 +109,7 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2_added_layer.pt"
 
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
