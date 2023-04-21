@@ -17,8 +17,12 @@ from utils import set_seed, setup_logging, CfgNode as CN
 import torch
 torch.cuda.empty_cache()
 #print(torch.cuda.memory_summary(device=None, abbreviated=False))
-
 # -----------------------------------------------------------------------------
+
+# BOOL TRAINING TYPES
+add_layer = True
+# -----------------------------------------------------------------------------
+
 
 def get_config() :
     C = CN()
