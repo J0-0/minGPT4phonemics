@@ -119,7 +119,7 @@ if __name__ == '__main__' :
     if want_pretrained_model :
         PATH = "/content/drive/MyDrive/out/chargpt/model.pt"  # model_loss_0_55.pt
         model.load_state_dict(torch.load(PATH))
-    print("config.model ", config.model)
+    print("model =", model)
     # config.model  model_type: gpt-mini
 
     # construct the trainer object

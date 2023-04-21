@@ -18,7 +18,13 @@ from utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
 
+# VARIABLES TO PASS THROUGH CHARGPT
+add_layer = False
 nb_voc_ph_punct = 94
+train_only_last_layer = False
+
+# -----------------------------------------------------------------------------
+
 
 class NewGELU(nn.Module):
     """
@@ -151,7 +157,9 @@ class GPT(nn.Module):
             ln_f = nn.LayerNorm(config.n_embd),
         ))
         self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
-        self.linear_fine_tuning = nn.Linear(config.vocab_size, nb_voc_ph_punct)
+        if add_layer:
+          self.linear_fine_tuning = nn.Linear(50257, nb_voc_ph_punct) 
+        # full 2048-sized time context window is always used
 
         # init all weights, and apply a special scaled init to the residual projections, per GPT-2 paper
         self.apply(self._init_weights)
@@ -190,7 +198,7 @@ class GPT(nn.Module):
         config.block_size = 1024  # openai's model block_size
         model = GPT(config)
         sd = model.state_dict()
-        print("SD =", sd)
+        #print("SD =", sd.keys(), len(sd)) # 'linear_fine_tuning.bias' # 319 
 
         # init a huggingface/transformers model
         model_hf = GPT2LMHeadModel.from_pretrained(model_type)
@@ -198,10 +206,14 @@ class GPT(nn.Module):
 
         # copy while ensuring all of the parameters are aligned and match in names and shapes
         keys = [k for k in sd_hf if not k.endswith('attn.masked_bias')] # ignore these
+        print(keys)
         transposed = ['attn.c_attn.weight', 'attn.c_proj.weight', 'mlp.c_fc.weight', 'mlp.c_proj.weight']
         # basically the openai checkpoints use a "Conv1D" module, but we only want to use a vanilla nn.Linear.
         # this means that we have to transpose these weights when we import them
-        assert len(keys) == len(sd)
+        if add_layer:
+          assert len(keys) == (len(sd) - 2) # for 'linear_fine_tuning.weight' and 'linear_fine_tuning.bias'
+        else: 
+          assert len(keys) == len(sd)
         for k in keys:
             if any(k.endswith(w) for w in transposed):
                 # special treatment for the Conv1D weights we need to transpose
@@ -213,7 +225,6 @@ class GPT(nn.Module):
                 assert sd_hf[k].shape == sd[k].shape
                 with torch.no_grad():
                     sd[k].copy_(sd_hf[k])
-
         return model
 
     def configure_optimizers(self, train_config):
@@ -258,7 +269,10 @@ class GPT(nn.Module):
             {"params": [param_dict[pn] for pn in sorted(list(decay))], "weight_decay": train_config.weight_decay},
             {"params": [param_dict[pn] for pn in sorted(list(no_decay))], "weight_decay": 0.0},
         ]
-        optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas)
+        if train_only_last_layer:
+            optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, optim_groups), lr=train_config.learning_rate, betas=train_config.betas)
+        else:
+            optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas)
         return optimizer
 
     def forward(self, idx, targets=None):
@@ -274,8 +288,12 @@ class GPT(nn.Module):
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)
-        x = self.linear_fine_tuning(x)
-        logits = self.lm_head(x)
+        if add_layer:
+          x = self.lm_head(x)
+          logits = self.linear_fine_tuning(x)
+        else:
+          logits = self.lm_head(x)
+
 
         # if we are given some desired targets also calculate the loss
         loss = None

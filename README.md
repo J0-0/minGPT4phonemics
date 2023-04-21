@@ -124,7 +124,9 @@ Papers + some implementation notes:
 - We use the same model and architecture as GPT-2, including the modified initialization, pre-normalization, and reversible tokenization described therein
 - we use alternating dense and locally banded sparse attention patterns in the layers of the transformer, similar to the Sparse Transformer
 - we always have the feedforward layer four times the size of the bottleneck layer, dff = 4 ∗ dmodel
-- all models use a context window of nctx = 2048 tokens.
+- all models use a context window of nctx = 
+  
+2048 tokens.
 - Adam with β1 = 0.9, β2 = 0.95, and eps = 10−8
 - All models use weight decay of 0.1 to provide a small amount of regularization. (NOTE: GPT-1 used 0.01 I believe, see above)
 - clip the global norm of the gradient at 1.0
