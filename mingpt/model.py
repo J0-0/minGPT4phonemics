@@ -206,6 +206,7 @@ class GPT(nn.Module):
         transposed = ['attn.c_attn.weight', 'attn.c_proj.weight', 'mlp.c_fc.weight', 'mlp.c_proj.weight']
         # basically the openai checkpoints use a "Conv1D" module, but we only want to use a vanilla nn.Linear.
         # this means that we have to transpose these weights when we import them
+        print(len(keys), len(sd) - 2, len(keys) == (len(sd) - 2))
         if add_layer:
           assert len(keys) == (len(sd) - 2) # for 'linear_fine_tuning.weight' and 'linear_fine_tuning.bias'
         else: 
