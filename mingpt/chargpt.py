@@ -105,7 +105,7 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2-medium.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2.pt"
     # print("DICTIONNARY ", train_dataset.itos)
 
     # construct the model
@@ -156,7 +156,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
 
@@ -166,7 +166,7 @@ if __name__ == '__main__' :
     test_bool = True
     if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
-        path_save_results = "/content/drive/MyDrive/minGPT_results/results_pretrained_context"
+        path_save_results = "/content/drive/MyDrive/minGPT_results/GPT_2/gpt2_willow"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
