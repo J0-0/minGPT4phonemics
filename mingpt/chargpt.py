@@ -21,6 +21,8 @@ torch.cuda.empty_cache()
 
 # BOOL TRAINING TYPES
 add_layer = True
+model_name = 'gpt2'
+model_title = "model_pretrained_gpt2_added_layer"
 # -----------------------------------------------------------------------------
 
 
@@ -38,7 +40,7 @@ def get_config() :
     # model
     C.model = GPT.get_default_config()
     #C.model.model_type = 'gpt-mini'
-    C.model.model_type = 'gpt2'
+    C.model.model_type = model_name
 
     # trainer
     C.trainer = Trainer.get_default_config()
@@ -109,20 +111,19 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/model_pretrained_gpt2_added_layer.pt"
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/"+ model_title +".pt"
 
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     voc_size = config.model.vocab_size
     config.model.block_size = train_dataset.get_block_size()
-    model = GPT.from_pretrained('gpt2', add_layer = add_layer)
+    model = GPT.from_pretrained(model_name, add_layer = add_layer)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
     #model = GPT(config.model)
-    want_pretrained_model = False
-    if want_pretrained_model :
-        PATH = "/content/drive/MyDrive/out/chargpt/model.pt"  # model_loss_0_55.pt
-        model.load_state_dict(torch.load(PATH))
+    want_pretrained_model = True
+    if want_pretrained_model:
+        model.load_state_dict(torch.load(path_drive_pretrained))
     print("model =", model)
     # config.model  model_type: gpt-mini
 
@@ -160,7 +161,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
         # run the optimization
@@ -170,7 +171,7 @@ if __name__ == '__main__' :
     if test_bool :
         # path_save_results = "/content/minGPT4phonemics/results_context"
         # ADD for loop for all 4 files
-        path_save_results = "/content/drive/MyDrive/minGPT_results/GPT_2_medium/gpt2_willow"
+        path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
         text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
         text_results_acc_for_context.write(
             "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
