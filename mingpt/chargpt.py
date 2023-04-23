@@ -169,68 +169,73 @@ if __name__ == '__main__' :
 
     test_bool = True
     if test_bool :
-        # path_save_results = "/content/minGPT4phonemics/results_context"
-        # ADD for loop for all 4 files
-        path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
-        text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
-        text_results_acc_for_context.write(
-            "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
-        model.load_state_dict(torch.load(path_drive_pretrained))
-        with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
-            acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
-                                                  "sum_approx_correct_pred"))
-            for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
-                sum_correct_pred = 0
-                sum_approx_correct_pred = 0
-                text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/the_black_willow_ph_punct.txt',
-                                 'r').read()
-                path_save_results_context = path_save_results + "_" + str(size_context)
-                # print("train_dataset.stoi", train_dataset.stoi)
-                dic_phonemes_pred_proba = {}
-                print(len(sorted(list(set(text_test)))), "different characters")
-                n_char2predict = len(text_test) - size_context
-                print(n_char2predict, " iterations")
-                if os.path.exists(path_save_results_context + '.txt') :
-                    os.remove(path_save_results_context + '.txt')
-                if os.path.exists(path_save_results_context + '.csv') :
-                    os.remove(path_save_results_context + '.csv')
-                text_results = open(path_save_results_context + '.txt', "w")
-                with open(path_save_results_context + '.csv', 'w') as f :
-                    f.write("%s,%s,%s,%s\n" % ("ORDER", "predicted CHARACTER",
-                                               "target CHARACTER", "PROBABILITY"))
-                    for pred_char in range(n_char2predict) :
-                        context = text_test[pred_char :size_context + pred_char]
-                        test_torch = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[
-                            None, ...].to(trainer.device)
-                        results = model.generate4testing(test_torch, 1, temperature=1.0, do_sample=True, top_k=10,
-                                                 return_proba=True, add_layer = add_layer)
-                        result_char, results_probas = results[0][0].tolist()[-1], list(results[1].values())[0]
-                        char_result = train_dataset.itos[result_char] if result_char < len(train_dataset.itos) else "_"
-                        text_results.write(char_result)
-                        sum_correct_pred += (char_result == text_test[size_context + pred_char])
-                        range_approx = 3
-                        for approx in range(pred_char - range_approx, pred_char + range_approx) :
-                            if size_context + approx < len(text_test) :
-                                if (char_result == text_test[size_context + approx]) :
-                                    sum_approx_correct_pred += 1
-                        f.write("%s,%s,%s,%s\n" % (pred_char, result_char,
-                                                   train_dataset.stoi[text_test[size_context + pred_char]],
-                                                   results_probas))
-                        # if pred_char != 0 and pred_char%1000 == 0:
-                        # print("pred_char =", pred_char)
-                        # print("sum_correct_pred =", np.round(sum_correct_pred/pred_char, 4))
-                        # print("sum_approx_correct_pred =",
-                        # np.round(sum_approx_correct_pred/pred_char, 4))
-                sum_correct_pred = np.round(sum_correct_pred / n_char2predict, 4)
-                sum_approx_correct_pred = np.round(sum_approx_correct_pred / n_char2predict, 4)
-                print(size_context)
-                print("sum_correct_pred =", sum_correct_pred)
-                print("sum_approx_correct_pred =", sum_approx_correct_pred)
-                text_results_acc_for_context.write(str(size_context) + "   "
-                                                   + str(sum_correct_pred) + "   " + str(
-                    sum_approx_correct_pred) + "\n")
-                acc_for_context.write("%s,%s,%s\n" % (size_context, sum_correct_pred,
-                                                      sum_approx_correct_pred))
-                text_results.close()
-                # text_results_acc_for_context.flush()
-        text_results_acc_for_context.close()
+        for name_short, name_long in zip(["willow", "cable", "easy_money", "lw1"],
+        ["the_black_willow_ph_punct.txt","cable_spool_fort_ph_punct.txt",
+        "easy_money_ph_punct.txt", "lw1_ph_punct.txt"]):
+            print(name_short, name_long)
+            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "_1/"+ name_short
+            # path_save_results = "/content/minGPT4phonemics/results_context"
+            # ADD for loop for all 4 files
+            # path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
+            text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
+            text_results_acc_for_context.write(
+                "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
+            model.load_state_dict(torch.load(path_drive_pretrained))
+            with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
+                acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
+                                                      "sum_approx_correct_pred"))
+                for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
+                    sum_correct_pred = 0
+                    sum_approx_correct_pred = 0
+                    text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/' + name_long,
+                                     'r').read()
+                    path_save_results_context = path_save_results + "_" + str(size_context)
+                    # print("train_dataset.stoi", train_dataset.stoi)
+                    dic_phonemes_pred_proba = {}
+                    print(len(sorted(list(set(text_test)))), "different characters")
+                    n_char2predict = len(text_test) - size_context
+                    print(n_char2predict, " iterations")
+                    if os.path.exists(path_save_results_context + '.txt') :
+                        os.remove(path_save_results_context + '.txt')
+                    if os.path.exists(path_save_results_context + '.csv') :
+                        os.remove(path_save_results_context + '.csv')
+                    text_results = open(path_save_results_context + '.txt', "w")
+                    with open(path_save_results_context + '.csv', 'w') as f :
+                        f.write("%s,%s,%s,%s\n" % ("ORDER", "predicted CHARACTER",
+                                                   "target CHARACTER", "PROBABILITY"))
+                        for pred_char in range(n_char2predict) :
+                            context = text_test[pred_char :size_context + pred_char]
+                            test_torch = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[
+                                None, ...].to(trainer.device)
+                            results = model.generate4testing(test_torch, 1, temperature=1.0, do_sample=True, top_k=10,
+                                                     return_proba=True, add_layer = add_layer)
+                            result_char, results_probas = results[0][0].tolist()[-1], list(results[1].values())[0]
+                            char_result = train_dataset.itos[result_char] if result_char < len(train_dataset.itos) else "_"
+                            text_results.write(char_result)
+                            sum_correct_pred += (char_result == text_test[size_context + pred_char])
+                            range_approx = 3
+                            for approx in range(pred_char - range_approx, pred_char + range_approx) :
+                                if size_context + approx < len(text_test) :
+                                    if (char_result == text_test[size_context + approx]) :
+                                        sum_approx_correct_pred += 1
+                            f.write("%s,%s,%s,%s\n" % (pred_char, result_char,
+                                                       train_dataset.stoi[text_test[size_context + pred_char]],
+                                                       results_probas))
+                            # if pred_char != 0 and pred_char%1000 == 0:
+                            # print("pred_char =", pred_char)
+                            # print("sum_correct_pred =", np.round(sum_correct_pred/pred_char, 4))
+                            # print("sum_approx_correct_pred =",
+                            # np.round(sum_approx_correct_pred/pred_char, 4))
+                    sum_correct_pred = np.round(sum_correct_pred / n_char2predict, 4)
+                    sum_approx_correct_pred = np.round(sum_approx_correct_pred / n_char2predict, 4)
+                    print(size_context)
+                    print("sum_correct_pred =", sum_correct_pred)
+                    print("sum_approx_correct_pred =", sum_approx_correct_pred)
+                    text_results_acc_for_context.write(str(size_context) + "   "
+                                                       + str(sum_correct_pred) + "   " + str(
+                        sum_approx_correct_pred) + "\n")
+                    acc_for_context.write("%s,%s,%s\n" % (size_context, sum_correct_pred,
+                                                          sum_approx_correct_pred))
+                    text_results.close()
+                    # text_results_acc_for_context.flush()
+            text_results_acc_for_context.close()
