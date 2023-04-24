@@ -21,8 +21,8 @@ torch.cuda.empty_cache()
 
 # BOOL TRAINING TYPES
 add_layer = True
-model_name = 'gpt2'
-model_title = "model_pretrained_gpt2_added_layer"
+model_name = "gpt-mini" #'gpt2'
+model_title = "GPT_mini_unpretrained" # "model_pretrained_gpt2_added_layer"
 # -----------------------------------------------------------------------------
 
 
@@ -117,13 +117,20 @@ if __name__ == '__main__' :
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     voc_size = config.model.vocab_size
     config.model.block_size = train_dataset.get_block_size()
-    model = GPT.from_pretrained(model_name, add_layer = add_layer)
+    if model_name == "gpt-mini":
+        model = GPT(config.model)
+    else:
+        model = GPT.from_pretrained(model_name, add_layer = add_layer)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
-    #model = GPT(config.model)
+    for param in model.parameters():
+        print("param_data =", param.data)
     want_pretrained_model = True
     if want_pretrained_model:
         model.load_state_dict(torch.load(path_drive_pretrained))
+    print("MODEL PRETRAINED")
+    for param in model.parameters():
+        print("param_data =", param.data)
     print("model =", model)
     # config.model  model_type: gpt-mini
 
@@ -132,7 +139,6 @@ if __name__ == '__main__' :
 
     # iteration callback
     def batch_end_callback(trainer) :
-
         if trainer.iter_num % 10 == 0 :
             print(
                 f"iter_dt {trainer.iter_dt * 1000:.2f}ms; iter {trainer.iter_num}: train loss {trainer.loss.item():.5f}")
@@ -169,11 +175,11 @@ if __name__ == '__main__' :
 
     test_bool = True
     if test_bool :
-        for name_short, name_long in zip(["willow", "cable", "easy_money", "lw1"],
-        ["the_black_willow_ph_punct.txt","cable_spool_fort_ph_punct.txt",
-        "easy_money_ph_punct.txt", "lw1_ph_punct.txt"]):
+        for name_short, name_long in zip(["cable", "easy_money", "willow", "lw1"],
+        ["cable_spool_fort_ph_punct.txt", "easy_money_ph_punct.txt",
+         "the_black_willow_ph_punct.txt", "lw1_ph_punct.txt"]):
             print(name_short, name_long)
-            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "_1/"+ name_short
+            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/"+ name_short
             # path_save_results = "/content/minGPT4phonemics/results_context"
             # ADD for loop for all 4 files
             # path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
