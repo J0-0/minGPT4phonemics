@@ -127,7 +127,7 @@ if __name__ == '__main__' :
         print("param_data =", param.data)
     want_pretrained_model = True
     if want_pretrained_model:
-        model.load_state_dict(torch.load(path_drive_pretrained))
+        model.load_state_dict(torch.load(path_drive_pretrained)) #map_location=torch.device('cpu')
     print("MODEL PRETRAINED")
     for param in model.parameters():
         print("param_data =", param.data)
@@ -186,7 +186,7 @@ if __name__ == '__main__' :
             text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
             text_results_acc_for_context.write(
                 "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
-            model.load_state_dict(torch.load(path_drive_pretrained))
+            model.load_state_dict(torch.load(path_drive_pretrained)) #map_location=torch.device('cpu')
             with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
                 acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred",
                                                       "sum_approx_correct_pred"))

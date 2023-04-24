@@ -18,7 +18,7 @@ from utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
 # VARIABLES TO PASS THROUGH CHARGPT
-add_layer = True
+add_layer = False
 # -----------------------------------------------------------------------------
 
 
