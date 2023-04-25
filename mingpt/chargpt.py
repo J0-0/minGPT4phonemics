@@ -20,7 +20,7 @@ torch.cuda.empty_cache()
 # -----------------------------------------------------------------------------
 
 # BOOL TRAINING TYPES
-add_layer = True
+add_layer = False
 on_GPU = False
 model_name = "gpt-mini" #'gpt2'
 model_title = "GPT_mini_unpretrained" # "model_pretrained_gpt2_added_layer"

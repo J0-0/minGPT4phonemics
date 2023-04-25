@@ -152,7 +152,7 @@ class GPT(nn.Module):
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd),
         ))
-        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
+        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False) # LM: language modelling
         if add_layer:
           self.linear_fine_tuning = nn.Linear(50257, nb_voc_ph_punct) 
         # full 2048-sized time context window is always used
