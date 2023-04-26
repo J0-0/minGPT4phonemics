@@ -184,7 +184,7 @@ if __name__ == '__main__' :
         ["cable_spool_fort_ph_punct.txt", "easy_money_ph_punct.txt",
          "the_black_willow_ph_punct.txt", "lw1_ph_punct.txt"]):
             print(name_short, name_long)
-            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/"+ name_short
+            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/"+ name_short +"_1"
             # path_save_results = "/content/minGPT4phonemics/results_context"
             # ADD for loop for all 4 files
             # path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
