@@ -23,7 +23,9 @@ torch.cuda.empty_cache()
 add_layer = False
 on_GPU = False
 model_name = "gpt-mini" #'gpt2'
-model_title = "GPT_mini_unpretrained" # "model_pretrained_gpt2_added_layer"
+model_title = "GPT_mini_pretrained" # "model_pretrained_gpt2_added_layer"
+model_weights_stored = "GPT_mini_unpretrained"
+
 # -----------------------------------------------------------------------------
 
 
@@ -112,8 +114,7 @@ if __name__ == '__main__' :
     # text = open('/content/drive/MyDrive/stimuli_minGPT/wikitext-103/wiki_test_to_phonemes_punct.txt', 'r').read()
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
-    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/"+ model_title +".pt"
-
+    path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/"+ model_weights_stored +".pt"
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     voc_size = config.model.vocab_size
