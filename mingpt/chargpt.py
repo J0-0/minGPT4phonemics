@@ -21,7 +21,7 @@ torch.cuda.empty_cache()
 
 # BOOL TRAINING TYPES
 add_layer = False
-on_GPU = False
+on_GPU = True
 model_name = "gpt-mini" #'gpt2'
 model_title = "GPT_mini_pretrained" # "model_pretrained_gpt2_added_layer"
 model_weights_stored = "GPT_mini_unpretrained"
@@ -125,17 +125,12 @@ if __name__ == '__main__' :
         model = GPT.from_pretrained(model_name, add_layer = add_layer)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
-    for param in model.parameters():
-        print("param_data =", param.data)
     want_pretrained_model = True
     if want_pretrained_model:
         if on_GPU:
             model.load_state_dict(torch.load(path_drive_pretrained))
         else:
             model.load_state_dict(torch.load(path_drive_pretrained, map_location=torch.device('cpu')))
-    print("MODEL PRETRAINED")
-    for param in model.parameters():
-        print("param_data =", param.data)
     print("model =", model)
     # config.model  model_type: gpt-mini
 
@@ -160,10 +155,6 @@ if __name__ == '__main__' :
                 completion = ''.join([train_dataset.itos[int(i)] for i in y])
                 print(completion)
                 print("config.model ", config.model)
-            # chars_computes = sorted(list(set(data)))
-            # self.itos = { i:ch for i,ch in enumerate(chars) }
-            # train_dataset.itos[int(idx_next)],
-            # save the latest model
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")
             torch.save(model.state_dict(), ckpt_path)
@@ -172,14 +163,17 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
         # run the optimization
         trainer.run()
 
     test_bool = True
-    if test_bool :
+    if test_bool:
+        #for path in [path_short_training, path_long_training]:
+        #   with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
+        #       acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred", "sum_approx_correct_pred"))
         for name_short, name_long in zip(["cable", "easy_money", "willow", "lw1"],
         ["cable_spool_fort_ph_punct.txt", "easy_money_ph_punct.txt",
          "the_black_willow_ph_punct.txt", "lw1_ph_punct.txt"]):
@@ -201,6 +195,9 @@ if __name__ == '__main__' :
                 for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
                     sum_correct_pred = 0
                     sum_approx_correct_pred = 0
+                    sum_pred_in_top_2 = 0
+                    sum_pred_in_top_3 = 0
+                    sum_pred_in_top_5 = 0
                     text_test = open('/content/minGPT4phonemics/bids_anonym_stimuli_text/' + name_long,
                                      'r').read()
                     path_save_results_context = path_save_results + "_" + str(size_context)
@@ -223,6 +220,7 @@ if __name__ == '__main__' :
                                 None, ...].to(trainer.device)
                             results = model.generate4testing(test_torch, 1, temperature=1.0, do_sample=True, top_k=10,
                                                      return_proba=True, add_layer = add_layer)
+                            print("results =", results)
                             result_char, results_probas = results[0][0].tolist()[-1], list(results[1].values())[0]
                             char_result = train_dataset.itos[result_char] if result_char < len(train_dataset.itos) else "_"
                             text_results.write(char_result)

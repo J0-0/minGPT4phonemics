@@ -360,7 +360,8 @@ class GPT(nn.Module):
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
-            dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
+            #dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
+            dict_probas[(n_each_new_token, idx_next.item())] = torch.round(torch.topk(probs, k = 10), 4)
             #break
         if return_proba:
           return idx, dict_probas
