@@ -25,6 +25,7 @@ on_GPU = True
 model_name = "gpt-mini" #'gpt2'
 model_title = "GPT_mini_pretrained" # "model_pretrained_gpt2_added_layer"
 model_weights_stored = "GPT_mini_pretrained"
+model_after_training = "GPT_mini_more_pretrained"
 
 # -----------------------------------------------------------------------------
 
@@ -115,6 +116,7 @@ if __name__ == '__main__' :
     text = open('/content/drive/MyDrive/stimuli_minGPT/total_train_wiki103_ph_ponct.txt', 'r').read()
     train_dataset = CharDataset(config.data, text)
     path_drive_pretrained = "/content/drive/MyDrive/out/chargpt/"+ model_weights_stored +".pt"
+    path_model_more_trained = "/content/drive/MyDrive/out/chargpt/"+ model_after_training +".pt"
     # construct the model
     config.model.vocab_size = train_dataset.get_vocab_size()  # 51
     voc_size = config.model.vocab_size
@@ -158,12 +160,12 @@ if __name__ == '__main__' :
             print("saving model")
             ckpt_path = os.path.join(config.system.work_dir, "model.pt")
             torch.save(model.state_dict(), ckpt_path)
-            torch.save(model.state_dict(), path_drive_pretrained)
+            torch.save(model.state_dict(), path_model_more_trained)
             # revert model to training mode
             model.train()
 
 
-    train_bool = False
+    train_bool = True
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
         # run the optimization
@@ -183,7 +185,7 @@ if __name__ == '__main__' :
         ["cable_spool_fort_ph_punct.txt", "easy_money_ph_punct.txt",
          "the_black_willow_ph_punct.txt", "lw1_ph_punct.txt"]):
             print(name_short, name_long)
-            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/"+ name_short +"_1"
+            path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/"+ name_short +"_more_training"
             # path_save_results = "/content/minGPT4phonemics/results_context"
             # ADD for loop for all 4 files
             # path_save_results = "/content/drive/MyDrive/minGPT_results/" + model_title + "/gpt2_willow"
@@ -191,9 +193,9 @@ if __name__ == '__main__' :
             text_results_acc_for_context.write(
                 "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
             if on_GPU :
-                model.load_state_dict(torch.load(path_drive_pretrained))
+                model.load_state_dict(torch.load(path_model_more_trained))
             else :
-                model.load_state_dict(torch.load(path_drive_pretrained, map_location=torch.device('cpu')))
+                model.load_state_dict(torch.load(path_model_more_trained, map_location=torch.device('cpu')))
             with open(path_all_results_texts_models, 'a') as acc_for_context :
                 for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
                     print("size of context =", size_context)
@@ -264,7 +266,7 @@ if __name__ == '__main__' :
                                                        + str(sum_correct_pred) + "   " + str(
                         sum_approx_correct_pred) + "\n")
                     acc_for_context.write("%s,%s,%s,%s,%s,%s,%s,%s\n" % 
-                    (model_weights_stored, name_short, size_context, sum_correct_pred,
+                    (model_after_training, name_short, size_context, sum_correct_pred,
                     dic_sum_pred_top["sum_pred_in_top_"+ str(2)], dic_sum_pred_top["sum_pred_in_top_"+ str(3)],
                     dic_sum_pred_top["sum_pred_in_top_"+ str(5)], dic_sum_pred_top["sum_pred_in_top_"+ str(10)]))
                     text_results.close()
