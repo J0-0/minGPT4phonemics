@@ -24,7 +24,7 @@ add_layer = False
 on_GPU = True
 model_name = "gpt-mini" #'gpt2'
 model_title = "GPT_mini_pretrained" # "model_pretrained_gpt2_added_layer"
-model_weights_stored = "GPT_mini_unpretrained"
+model_weights_stored = "GPT_mini_pretrained"
 
 # -----------------------------------------------------------------------------
 
@@ -196,6 +196,7 @@ if __name__ == '__main__' :
                 model.load_state_dict(torch.load(path_drive_pretrained, map_location=torch.device('cpu')))
             with open(path_all_results_texts_models, 'a') as acc_for_context :
                 for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
+                    print("size of context =", size_context)
                     sum_correct_pred = 0
                     sum_approx_correct_pred = 0
                     dic_sum_pred_top = {}
@@ -263,7 +264,7 @@ if __name__ == '__main__' :
                                                        + str(sum_correct_pred) + "   " + str(
                         sum_approx_correct_pred) + "\n")
                     acc_for_context.write("%s,%s,%s,%s,%s,%s,%s,%s\n" % 
-                    (model_name, name_short, size_context, sum_correct_pred,
+                    (model_weights_stored, name_short, size_context, sum_correct_pred,
                     dic_sum_pred_top["sum_pred_in_top_"+ str(2)], dic_sum_pred_top["sum_pred_in_top_"+ str(3)],
                     dic_sum_pred_top["sum_pred_in_top_"+ str(5)], dic_sum_pred_top["sum_pred_in_top_"+ str(10)]))
                     text_results.close()
