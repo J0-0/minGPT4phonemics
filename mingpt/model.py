@@ -352,7 +352,6 @@ class GPT(nn.Module):
                 logits[logits < v[:, [-1]]] = -float('Inf')
             # apply softmax to convert logits to (normalized) probabilities
             probs = F.softmax(logits, dim=-1)
-            #print("probs ", probs)
             # either sample from the distribution or take the most likely element
             if do_sample:
                 idx_next = torch.multinomial(probs, num_samples=1)
@@ -361,7 +360,7 @@ class GPT(nn.Module):
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
             #dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
-            dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = len(probs), dim=-1)
+            dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
             #break
         if return_proba:
           return idx_next.item(), dict_probas

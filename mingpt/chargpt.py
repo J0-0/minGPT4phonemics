@@ -172,6 +172,10 @@ if __name__ == '__main__' :
     test_bool = True
     if test_bool:
         list_top = [2, 3, 5, 10]
+        path_all_results_texts_models = "/content/drive/MyDrive/minGPT_results/all_conditional_accs.csv"
+        with open(path_all_results_texts_models, 'a') as acc_for_context :
+          acc_for_context.write("%s,%s,%s,%s,%s,%s,%s,%s\n" % ("model_name", 
+          "text_name", "size_content", "sum_correct_pred","top_2",  "top_3", "top5", "top10"))
         #for path in [path_short_training, path_long_training]:
         #   with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
         #       acc_for_context.write("%s,%s,%s\n" % ("size_content", "sum_correct_pred", "sum_approx_correct_pred"))
@@ -190,9 +194,7 @@ if __name__ == '__main__' :
                 model.load_state_dict(torch.load(path_drive_pretrained))
             else :
                 model.load_state_dict(torch.load(path_drive_pretrained, map_location=torch.device('cpu')))
-            with open(path_save_results + '_acc_for_context.csv', 'w') as acc_for_context :
-                acc_for_context.write("%s,%s,%s,%s,%s,%s\n" % ("size_content", "sum_correct_pred",
-                                                      "top_2",  "top_3", "top5", "top10"))
+            with open(path_all_results_texts_models, 'a') as acc_for_context :
                 for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
                     sum_correct_pred = 0
                     sum_approx_correct_pred = 0
@@ -220,22 +222,27 @@ if __name__ == '__main__' :
                                 None, ...].to(trainer.device)
                             results = model.generate4testing(test_torch, 1, temperature=1.0, do_sample=False, top_k=None,
                                                      return_proba=True, add_layer = add_layer)
-                            print("results =", results)
                             result_char, results_probas, ordered_ranks = results[0], \
-                            list(list(results[1].values())[0][0][0]), list(list(results[1].values())[1][0][0])
-                            print("result_char =", result_char)
-                            print("results_probas =", results_probas)
+                            list(list(results[1].values())[0][0][0]), list(list(results[1].values())[0][1][0])
+                            #print("result_char =", result_char)
+                            #print("results_probas =", results_probas)
+                            #print("ordered_ranks =", ordered_ranks)
                             char_result = train_dataset.itos[result_char] if result_char < len(train_dataset.itos) else "_"
                             text_results.write(char_result)
                             sum_correct_pred += (char_result == text_test[size_context + pred_char])
-                            for (enum_rank, rank), (enum_proba, proba) in zip(enumerate(ordered_ranks), enumerate(results_probas)):
+                            for (enum_rank, rank0), (enum_proba, proba0) in zip(enumerate(ordered_ranks), enumerate(results_probas)):
+                                #print("enum_rank, enum_proba ", enum_rank, enum_proba)
+                                rank = rank0.item()
+                                proba = proba0.item()
+                                #print(rank, train_dataset.stoi[text_test[size_context + pred_char]])
                                 rank_of_target = (rank == train_dataset.stoi[text_test[size_context + pred_char]])
                                 if rank_of_target:
-                                    print(rank, train_dataset.stoi[text_test[size_context + pred_char]], rank_of_target)
+                                    #print(rank, train_dataset.stoi[text_test[size_context + pred_char]], rank_of_target)
                                     n_rank_target, rank_proba = enum_rank, proba
                                     for top in list_top:
                                         if enum_rank < top:
                                             dic_sum_pred_top["sum_pred_in_top_" + str(top)] += 1
+                                    break
                             #range_approx = 3
                             #for approx in range(pred_char - range_approx, pred_char + range_approx) :
                                 #if size_context + approx < len(text_test) :
@@ -250,13 +257,13 @@ if __name__ == '__main__' :
                             # np.round(sum_approx_correct_pred/pred_char, 4))
                     sum_correct_pred = np.round(sum_correct_pred / n_char2predict, 4)
                     sum_approx_correct_pred = np.round(sum_approx_correct_pred / n_char2predict, 4)
-                    print(size_context)
-                    print("sum_correct_pred =", sum_correct_pred)
-                    print("sum_approx_correct_pred =", sum_approx_correct_pred)
+                    for top in list_top:
+                        dic_sum_pred_top["sum_pred_in_top_"+ str(top)] = np.round(dic_sum_pred_top["sum_pred_in_top_"+ str(top)]/n_char2predict, 4)
                     text_results_acc_for_context.write(str(size_context) + "   "
                                                        + str(sum_correct_pred) + "   " + str(
                         sum_approx_correct_pred) + "\n")
-                    acc_for_context.write("%s,%s,%s,%s,%s,%s\n" % (size_context, sum_correct_pred,
+                    acc_for_context.write("%s,%s,%s,%s,%s,%s,%s,%s\n" % 
+                    (model_name, name_short, size_context, sum_correct_pred,
                     dic_sum_pred_top["sum_pred_in_top_"+ str(2)], dic_sum_pred_top["sum_pred_in_top_"+ str(3)],
                     dic_sum_pred_top["sum_pred_in_top_"+ str(5)], dic_sum_pred_top["sum_pred_in_top_"+ str(10)]))
                     text_results.close()
