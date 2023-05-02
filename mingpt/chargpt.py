@@ -23,9 +23,9 @@ torch.cuda.empty_cache()
 add_layer = False
 on_GPU = True
 model_name = "gpt-mini" #'gpt2'
-model_title = "GPT_mini_pretrained" # "model_pretrained_gpt2_added_layer"
-model_weights_stored = "GPT_mini_pretrained"
-model_after_training = "GPT_mini_more_pretrained"
+model_title = "GPT_mini_untrained" # "model_pretrained_gpt2_added_layer"
+model_weights_stored = "GPT_mini_untrained" #"GPT_mini_pretrained"
+model_after_training = "GPT_mini_untrained" #"GPT_mini_more_pretrained"
 
 # -----------------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ if __name__ == '__main__' :
         model = GPT.from_pretrained(model_name, add_layer = add_layer)
     print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
-    want_pretrained_model = True
+    want_pretrained_model = False
     if want_pretrained_model:
         if on_GPU:
             model.load_state_dict(torch.load(path_drive_pretrained))
@@ -165,7 +165,7 @@ if __name__ == '__main__' :
             model.train()
 
 
-    train_bool = True
+    train_bool = False
     if train_bool :
         trainer.set_callback('on_batch_end', batch_end_callback)
         # run the optimization
@@ -192,12 +192,14 @@ if __name__ == '__main__' :
             text_results_acc_for_context = open(path_save_results + "_acc_for_context" + ".txt", "w")
             text_results_acc_for_context.write(
                 "size_context" + "   " + "sum_correct_pred =" + "   " + "sum_approx_correct_pred" + "\n")
-            if on_GPU :
-                model.load_state_dict(torch.load(path_model_more_trained))
-            else :
-                model.load_state_dict(torch.load(path_model_more_trained, map_location=torch.device('cpu')))
+            baseline_not_trained = True
+            if not baseline_not_trained:
+                if on_GPU :
+                    model.load_state_dict(torch.load(path_model_more_trained))
+                else :
+                    model.load_state_dict(torch.load(path_model_more_trained, map_location=torch.device('cpu')))
             with open(path_all_results_texts_models, 'a') as acc_for_context :
-                for size_context in [1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
+                for size_context in [100]: #[1, 2, 3, 5, 10, 20, 30, 40, 50, 100, 500, 1000]:
                     print("size of context =", size_context)
                     sum_correct_pred = 0
                     sum_approx_correct_pred = 0
