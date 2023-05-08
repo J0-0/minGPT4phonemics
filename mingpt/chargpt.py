@@ -26,6 +26,7 @@ model_name = "gpt-mini" #'gpt2'
 model_title = "GPT_mini_more_pretrained" #"GPT_mini_untrained" # "model_pretrained_gpt2_added_layer"
 model_weights_stored = "GPT_mini_more_pretrained" #"GPT_mini_pretrained"
 model_after_training = "GPT_mini_more_pretrained" #"GPT_mini_more_pretrained"
+path_save_results_proba = "/content/drive/MyDrive/minGPT_results/"
 
 # -----------------------------------------------------------------------------
 
@@ -274,36 +275,42 @@ if __name__ == '__main__' :
             text_results_acc_for_context.close()
 
     generate_bool = True
-    if generate_bool:
+    if generate_bool :
+        df_generation = pd.DataFrame()
         contexts = [
             "ɐ lɑːŋ taɪm ɐɡoʊ, ɪn ɐ ɡ",
             "aɪ hæv eɪ d",
             "wɛl dwʌn ɪz b",
             "ɐ dʒɜːni əvə θaʊsənd maɪlz bɪɡɪnz wɪð ɐ "
         ]
-        for context in contexts:
-            for i in range(10):
+        for c, context in enumerate(contexts):
+            for i in range(10) :
                 x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
                     trainer.device)
-                results = model.generate4testing(x, 1, temperature=1.0, do_sample=True, top_k=10, return_proba=True, add_layer=add_layer)
+                results = model.generate4testing(x, 1, temperature=1.0, do_sample=False, top_k=10, return_proba=True,
+                                                 add_layer=add_layer)
                 result_char, results_probas, ordered_ranks = results[0], \
-                              list(list(results[1].values())[0][0][0]), list(list(results[1].values())[0][1][0])
+                                                             list(list(results[1].values())[0][0][0]), list(
+                    list(results[1].values())[0][1][0])
                 print("result_char =", result_char)
                 print("results_probas =", results_probas)
                 print("ordered_ranks =", ordered_ranks)
                 results_probas_list = []
                 ordered_ranks_list = []
+                resulted_char_list = []
                 for (enum_rank, rank0), (enum_proba, proba0) in zip(enumerate(ordered_ranks[:10]),
-                                                                  enumerate(results_probas[:10])):
+                                                                    enumerate(results_probas[:10])) :
                     rank = rank0.item()
                     proba = proba0.item()
-                    results_probas_list.append(rank)
-                    ordered_ranks_list.append(proba)
-                df_generation = pd.DataFrame()
-                df_generation["resulted character"+"_"+str(i)] = train_dataset.itos[int(result_char)]
-                df_generation["ordered ranks"+"_"+str(i)] = ordered_ranks_list
-                df_generation["resulted probas"+"_"+str(i)] = results_probas_list
+                    results_probas_list.append(proba)
+                    ordered_ranks_list.append(rank)
+                    resulted_char_list.append(train_dataset.itos[int(rank)])
+                df_generation["context " + "_" + str(c) + "_"+ str(i)] = context
+                df_generation["resulted character" + "_" + str(c) + "_"+ str(i)] = resulted_char_list
+                #df_generation["ordered ranks" + "_" + str(c) + "_"+ str(i)] = ordered_ranks_list
+                df_generation["resulted probas" + "_" + str(c) + "_"+ str(i)] = results_probas_list
                 context += train_dataset.itos[int(result_char)]
                 print(context)
                 print(df_generation)
+        df_generation.to_csv(path_save_results_proba + "_result_generated.csv")
 
