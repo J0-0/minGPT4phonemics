@@ -236,10 +236,8 @@ if __name__ == '__main__' :
                             text_results.write(char_result)
                             sum_correct_pred += (char_result == text_test[size_context + pred_char])
                             for (enum_rank, rank0), (enum_proba, proba0) in zip(enumerate(ordered_ranks), enumerate(results_probas)):
-                                #print("enum_rank, enum_proba ", enum_rank, enum_proba)
                                 rank = rank0.item()
                                 proba = proba0.item()
-                                #print(rank, train_dataset.stoi[text_test[size_context + pred_char]])
                                 rank_of_target = (rank == train_dataset.stoi[text_test[size_context + pred_char]])
                                 if rank_of_target:
                                     #print(rank, train_dataset.stoi[text_test[size_context + pred_char]], rank_of_target)
@@ -284,12 +282,28 @@ if __name__ == '__main__' :
             "ɐ dʒɜːni əvə θaʊsənd maɪlz bɪɡɪnz wɪð ɐ "
         ]
         for context in contexts:
-            x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
-                trainer.device)
-            y, dic_proba = model.generate4testing(x, 500, temperature=1.0, do_sample=True, top_k=10, add_layer=add_layer)[0]
-            df_proba = pd.DataFrame.from_dict(dic_proba)
-            completion = ''.join([train_dataset.itos[int(i)] for i in y])
-            print(context)
-            print(completion)
-            print(df_proba)
+            for i in range(10):
+                x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
+                    trainer.device)
+                results = model.generate4testing(x, 1, temperature=1.0, do_sample=True, top_k=10, return_proba=True, add_layer=add_layer)
+                result_char, results_probas, ordered_ranks = results[0], \
+                              list(list(results[1].values())[0][0][0]), list(list(results[1].values())[0][1][0])
+                print("result_char =", result_char)
+                print("results_probas =", results_probas)
+                print("ordered_ranks =", ordered_ranks)
+                results_probas_list = []
+                ordered_ranks_list = []
+                for (enum_rank, rank0), (enum_proba, proba0) in zip(enumerate(ordered_ranks[:10]),
+                                                                  enumerate(results_probas[:10])):
+                    rank = rank0.item()
+                    proba = proba0.item()
+                    results_probas_list.append(rank)
+                    ordered_ranks_list.append(proba)
+                df_generation = pd.DataFrame()
+                df_generation["resulted character"+"_"+str(i)] = train_dataset.itos[int(result_char)]
+                df_generation["ordered ranks"+"_"+str(i)] = ordered_ranks_list
+                df_generation["resulted probas"+"_"+str(i)] = results_probas_list
+                context += train_dataset.itos[int(result_char)]
+                print(context)
+                print(df_generation)
 
