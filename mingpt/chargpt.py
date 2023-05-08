@@ -278,9 +278,10 @@ if __name__ == '__main__' :
     generate_bool = True
     if generate_bool:
         contexts = [
-            "ə lɒŋ taɪm əˈɡəʊ, ɪn ə ɡ",
-            "aɪ hæv ə dr",
-            "wɛl dʌn ɪz "
+            "ɐ lɑːŋ taɪm ɐɡoʊ, ɪn ɐ ɡ",
+            "aɪ hæv eɪ d",
+            "wɛl dwʌn ɪz b",
+            "ɐ dʒɜːni əvə θaʊsənd maɪlz bɪɡɪnz wɪð ɐ "
         ]
         for context in contexts:
             x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
