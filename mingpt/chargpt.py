@@ -23,9 +23,9 @@ torch.cuda.empty_cache()
 add_layer = False
 on_GPU = True
 model_name = "gpt-mini" #'gpt2'
-model_title = "GPT_mini_untrained" # "model_pretrained_gpt2_added_layer"
-model_weights_stored = "GPT_mini_untrained" #"GPT_mini_pretrained"
-model_after_training = "GPT_mini_untrained" #"GPT_mini_more_pretrained"
+model_title = "GPT_mini_more_pretrained" #"GPT_mini_untrained" # "model_pretrained_gpt2_added_layer"
+model_weights_stored = "GPT_mini_more_pretrained" #"GPT_mini_pretrained"
+model_after_training = "GPT_mini_more_pretrained" #"GPT_mini_more_pretrained"
 
 # -----------------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ if __name__ == '__main__' :
     # get default config and overrides from the command line, if any
     config = get_config()
     config.merge_from_args(sys.argv[1 :])
-    print(config)
+    #print(config)
     setup_logging(config)
     set_seed(config.system.seed)
 
@@ -125,9 +125,9 @@ if __name__ == '__main__' :
         model = GPT(config.model)
     else:
         model = GPT.from_pretrained(model_name, add_layer = add_layer)
-    print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
+    #print("config.model.vocab_size, config.model.block_size", config.model.vocab_size, config.model.block_size)
     # config.model.vocab_size, config.model.block_size 72 128 #75 128
-    want_pretrained_model = False
+    want_pretrained_model = True
     if want_pretrained_model:
         if on_GPU:
             model.load_state_dict(torch.load(path_drive_pretrained))
