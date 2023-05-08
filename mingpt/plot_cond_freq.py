@@ -10,6 +10,10 @@ import mne
 
 def plot(df_, x_label, y_label, two_models = True):
     fig, ax = plt.subplots(1, figsize=[26, 6])
+    print(df_[x_label].shape)
+    print(df_[x_label])
+    print(df_[y_label].shape)
+    print(df_[x_label])
     if two_models:
         sns.lineplot(x=x_label, y=y_label, data=df_, hue="coherence", errorbar=('ci', 95))
     else:

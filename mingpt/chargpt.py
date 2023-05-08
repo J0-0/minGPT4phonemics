@@ -6,7 +6,7 @@ import os
 import sys
 import csv
 import numpy as np
-
+import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from torch.utils.data.dataloader import DataLoader
@@ -171,7 +171,7 @@ if __name__ == '__main__' :
         # run the optimization
         trainer.run()
 
-    test_bool = True
+    test_bool = False
     if test_bool:
         list_top = [2, 3, 5, 10]
         path_all_results_texts_models = "/content/drive/MyDrive/minGPT_results/all_conditional_accs.csv"
@@ -274,3 +274,21 @@ if __name__ == '__main__' :
                     text_results.close()
                     # text_results_acc_for_context.flush()
             text_results_acc_for_context.close()
+
+    generate_bool = True
+    if generate_bool:
+        contexts = [
+            "ə lɒŋ taɪm əˈɡəʊ, ɪn ə ɡ",
+            "aɪ hæv ə dr",
+            "wɛl dʌn ɪz "
+        ]
+        for context in contexts:
+            x = torch.tensor([train_dataset.stoi[s] for s in context], dtype=torch.long)[None, ...].to(
+                trainer.device)
+            y, dic_proba = model.generate4testing(x, 500, temperature=1.0, do_sample=True, top_k=10, add_layer=add_layer)[0]
+            df_proba = pd.DataFrame.from_dict(dic_proba)
+            completion = ''.join([train_dataset.itos[int(i)] for i in y])
+            print(context)
+            print(completion)
+            print(df_proba)
+
