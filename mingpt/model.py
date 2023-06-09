@@ -288,13 +288,16 @@ class GPT(nn.Module):
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         """
-        for _ in range(max_new_tokens):
+        dict_probas = {}
+        for n_each_new_token in range(max_new_tokens):
             # if the sequence context is growing too long we must crop it at block_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
             # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond)
+            logits, _ = self(idx_cond) # logit size = torch.Size([1, 128, 75])
             # pluck the logits at the final step and scale by desired temperature
             logits = logits[:, -1, :] / temperature
+            # now at final step logits are of size = torch.Size([1, 75]),
+            # which will generate the probas for each category of the vocabulary
             # optionally crop the logits to only the top k options
             if top_k is not None:
                 v, _ = torch.topk(logits, top_k)
@@ -308,8 +311,10 @@ class GPT(nn.Module):
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
-        dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
+            #dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
+            dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
+            #break
         if return_proba:
           return idx_next.item(), dict_probas
         else:
-          return idx
+          return idx_next.item()
