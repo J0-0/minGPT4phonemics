@@ -327,7 +327,9 @@ class GPT(nn.Module):
             #dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
             dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
             #break
+            print("return_proba ", return_proba)
+            print(dict_probas)
         if return_proba:
-          return idx_next.item(), dict_probas
+            return idx_next.item(), dict_probas
         else:
-          return idx_next.item()
+            return idx_next.item()
