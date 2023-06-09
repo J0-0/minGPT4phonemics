@@ -177,7 +177,8 @@ class GPT(nn.Module):
         Initialize a pretrained GPT model by copying over the weights
         from a huggingface/transformers checkpoint.
         """
-        #assert model_type in {'gpt2', 'gpt2-medium', 'gpt2-large', 'gpt2-xl'}
+        """
+        assert model_type in {'gpt2', 'gpt2-medium', 'gpt2-large', 'gpt2-xl'}
         from transformers import GPT2LMHeadModel
 
         # create a from-scratch initialized minGPT model
@@ -190,7 +191,6 @@ class GPT(nn.Module):
 
         # init a huggingface/transformers model
         model_hf = GPT2LMHeadModel.from_pretrained(model_type)
-        """
         sd_hf = model_hf.state_dict()
 
         # copy while ensuring all of the parameters are aligned and match in names and shapes
@@ -212,7 +212,20 @@ class GPT(nn.Module):
                     sd[k].copy_(sd_hf[k])
         return model
         """
-        return model_hf
+        from transformers import GPT2LMHeadModel
+        """
+        # create a from-scratch initialized minGPT model
+        config = cls.get_default_config()
+        config.model_type = model_type
+        config.vocab_size = 50257 # openai's model vocabulary
+        config.block_size = 1024  # openai's model block_size
+        model = GPT(config)
+        sd = model.state_dict()
+        """
+
+        # init a huggingface/transformers model
+        model = GPT2LMHeadModel.from_pretrained(model_type)
+        return model
 
     def configure_optimizers(self, train_config):
         """
