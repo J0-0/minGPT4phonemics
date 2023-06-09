@@ -9,18 +9,14 @@ https://github.com/huggingface/transformers/blob/main/src/transformers/models/gp
 """
 
 import math
-import numpy as np
+
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from utils import CfgNode as CN
+from mingpt.utils import CfgNode as CN
 
 # -----------------------------------------------------------------------------
-# VARIABLES TO PASS THROUGH CHARGPT
-add_layer = False
-# -----------------------------------------------------------------------------
-
 
 class NewGELU(nn.Module):
     """
@@ -103,7 +99,7 @@ class GPT(nn.Module):
     def get_default_config():
         C = CN()
         # either model_type or (n_layer, n_head, n_embd) must be given in the config
-        C.model_type = 'gpt-mini'
+        C.model_type = 'gpt'
         C.n_layer = None
         C.n_head = None
         C.n_embd =  None
@@ -116,7 +112,7 @@ class GPT(nn.Module):
         C.attn_pdrop = 0.1
         return C
 
-    def __init__(self, config, add_layer = add_layer, nb_voc_ph_punct = 94):
+    def __init__(self, config):
         super().__init__()
         assert config.vocab_size is not None
         assert config.block_size is not None
@@ -152,10 +148,7 @@ class GPT(nn.Module):
             h = nn.ModuleList([Block(config) for _ in range(config.n_layer)]),
             ln_f = nn.LayerNorm(config.n_embd),
         ))
-        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False) # LM: language modelling
-        if add_layer:
-          self.linear_fine_tuning = nn.Linear(50257, nb_voc_ph_punct) 
-        # full 2048-sized time context window is always used
+        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=False)
 
         # init all weights, and apply a special scaled init to the residual projections, per GPT-2 paper
         self.apply(self._init_weights)
@@ -179,7 +172,7 @@ class GPT(nn.Module):
             torch.nn.init.ones_(module.weight)
 
     @classmethod
-    def from_pretrained(cls, model_type, add_layer = add_layer):
+    def from_pretrained(cls, model_type):
         """
         Initialize a pretrained GPT model by copying over the weights
         from a huggingface/transformers checkpoint.
@@ -190,27 +183,22 @@ class GPT(nn.Module):
         # create a from-scratch initialized minGPT model
         config = cls.get_default_config()
         config.model_type = model_type
-        config.vocab_size = 50257 # openai's model vocabulary # otherwise works but learns slowly with 94
+        config.vocab_size = 50257 # openai's model vocabulary
         config.block_size = 1024  # openai's model block_size
         model = GPT(config)
         sd = model.state_dict()
-        #print("SD =", sd.keys(), len(sd)) # 'linear_fine_tuning.bias' # 319 
 
         # init a huggingface/transformers model
         model_hf = GPT2LMHeadModel.from_pretrained(model_type)
+        """
         sd_hf = model_hf.state_dict()
 
         # copy while ensuring all of the parameters are aligned and match in names and shapes
         keys = [k for k in sd_hf if not k.endswith('attn.masked_bias')] # ignore these
-        print(keys)
         transposed = ['attn.c_attn.weight', 'attn.c_proj.weight', 'mlp.c_fc.weight', 'mlp.c_proj.weight']
         # basically the openai checkpoints use a "Conv1D" module, but we only want to use a vanilla nn.Linear.
         # this means that we have to transpose these weights when we import them
-        print(len(keys), len(sd) - 2, len(keys) == (len(sd) - 2))
-        if add_layer:
-          assert len(keys) == (len(sd) - 2) # for 'linear_fine_tuning.weight' and 'linear_fine_tuning.bias'
-        else: 
-          assert len(keys) == len(sd)
+        assert len(keys) == len(sd)
         for k in keys:
             if any(k.endswith(w) for w in transposed):
                 # special treatment for the Conv1D weights we need to transpose
@@ -223,6 +211,8 @@ class GPT(nn.Module):
                 with torch.no_grad():
                     sd[k].copy_(sd_hf[k])
         return model
+        """
+        return model_hf
 
     def configure_optimizers(self, train_config):
         """
@@ -266,12 +256,10 @@ class GPT(nn.Module):
             {"params": [param_dict[pn] for pn in sorted(list(decay))], "weight_decay": train_config.weight_decay},
             {"params": [param_dict[pn] for pn in sorted(list(no_decay))], "weight_decay": 0.0},
         ]
-        #if train_only_last_layer:
-            #optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, optim_groups), lr=train_config.learning_rate, betas=train_config.betas)
-        optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas) # layers already torch.no_grad
+        optimizer = torch.optim.AdamW(optim_groups, lr=train_config.learning_rate, betas=train_config.betas)
         return optimizer
 
-    def forward(self, idx, targets=None, add_layer = add_layer):
+    def forward(self, idx, targets=None):
         device = idx.device
         b, t = idx.size()
         assert t <= self.block_size, f"Cannot forward sequence of length {t}, block size is only {self.block_size}"
@@ -284,12 +272,7 @@ class GPT(nn.Module):
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)
-        if add_layer:
-          x = self.lm_head(x)
-          logits = self.linear_fine_tuning(x)
-        else:
-          logits = self.lm_head(x)
-
+        logits = self.lm_head(x)
 
         # if we are given some desired targets also calculate the loss
         loss = None
@@ -299,7 +282,7 @@ class GPT(nn.Module):
         return logits, loss
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, add_layer = add_layer):
+    def generate(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, return_proba = True):
         """
         Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
@@ -325,43 +308,8 @@ class GPT(nn.Module):
                 _, idx_next = torch.topk(probs, k=1, dim=-1)
             # append sampled index to the running sequence and continue
             idx = torch.cat((idx, idx_next), dim=1)
-        return idx
-
-    @torch.no_grad()
-    def generate4testing(self, idx, max_new_tokens, temperature=1.0, do_sample=False, top_k=None, return_proba = False,
-                         add_layer = add_layer):
-        """
-        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
-        the sequence max_new_tokens times, feeding the predictions back into the model each time.
-        Most likely you'll want to make sure to be in model.eval() mode of operation for this.
-        """
-        dict_probas = {}
-        for n_each_new_token in range(max_new_tokens):
-            # if the sequence context is growing too long we must crop it at block_size
-            idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
-            # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond) # logit size = torch.Size([1, 128, 75])
-            # pluck the logits at the final step and scale by desired temperature
-            logits = logits[:, -1, :] / temperature 
-            # now at final step logits are of size = torch.Size([1, 75]), 
-            # which will generate the probas for each category of the vocabulary
-            # optionally crop the logits to only the top k options
-            if top_k is not None:
-                v, _ = torch.topk(logits, top_k)
-                logits[logits < v[:, [-1]]] = -float('Inf')
-            # apply softmax to convert logits to (normalized) probabilities
-            probs = F.softmax(logits, dim=-1)
-            # either sample from the distribution or take the most likely element
-            if do_sample:
-                idx_next = torch.multinomial(probs, num_samples=1)
-            else:
-                _, idx_next = torch.topk(probs, k=1, dim=-1)
-            # append sampled index to the running sequence and continue
-            idx = torch.cat((idx, idx_next), dim=1)
-            #dict_probas[(n_each_new_token, idx_next.item())] = np.round(torch.max(probs).item(), 4)
-            dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
-            #break
+        dict_probas[(n_each_new_token, idx_next.item())] = torch.topk(probs, k = probs.size()[1], dim=-1)
         if return_proba:
           return idx_next.item(), dict_probas
         else:
-          return idx_next.item()
+          return idx
